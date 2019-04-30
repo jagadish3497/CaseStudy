@@ -1,0 +1,101 @@
+html
+  head
+  body
+    nav.navbar.navbar-dark.bg-primary
+      .container-fluid.text-center
+        a.dropdown-toggle.pull-right(href='#', data-toggle='dropdown')
+          img.user-image(src='dist/img/user2-160x160.jpg', alt='User Image')
+          |             
+          span.hidden-xs.text {{user | uppercase}}
+    .hold-transition.skin-blue.sidebar-mini
+      // /.box
+      .row
+        .col-md-6.pull-left
+          .box.box-primary.direct-chat.direct-chat-primary
+            .box-header.with-border
+              h3.box-title Group Chat
+            |                 
+            .box-body
+              // Conversations are loaded here
+              #group.direct-chat-messages
+            |                 
+            .box-footer
+              div
+                .input-group
+                  input.form-control(type='text', name='message', placeholder='Type Message ...', ng-model='groupMessage', my-enter="group_message('{{groupMessage}}')")
+                  |                             
+                  span.input-group-btn
+                    button.btn.btn-primary.btn-flat(type='button', ng-click='group_message(groupMessage)') Send
+        |         
+        .col-md-3.pull-right
+          // USERS LIST
+          .box.box-primary
+            .box-header.with-border
+              h3.box-title Online Members
+              |                     
+              .box-tools.pull-right
+                span.label.label-danger {{users.length}}
+                |                         
+                button.btn.btn-box-tool(type='button', data-widget='collapse')
+                  i.fa.fa-minus
+                |                         
+                button.btn.btn-box-tool(type='button', data-widget='remove')
+                  i.fa.fa-times
+            // /.box-header
+            .box-body.direct-chat-messages
+              ul.users-list.clearfix
+                li(ng-repeat='user in users')
+                  button(data-toggle='modal', data-target='#myModal', ng-click='friend_request(user)')
+                    img(src='', alt='User Image')
+                    |                                 
+                    a.users-list-name {{user}}
+              // /.users-list
+            // /.box-body
+            .box-footer.text-center
+              a.uppercase(href='javascript:void(0)') Something
+            // /.box-footer
+          // /.box
+        // /.col
+        .col-md-3.pull-right
+          // USERS LIST
+          .box.box-primary
+            .box-header.with-border
+              h3.box-title Friends
+              |                     
+              .box-tools
+                span.label.label-danger {{online_friends.length}}
+                |                         
+                button.btn.btn-box-tool(type='button', data-widget='collapse')
+                  i.fa.fa-minus
+                |                         
+                button.btn.btn-box-tool(type='button', data-widget='remove')
+                  i.fa.fa-times
+            // /.box-header
+            .box-body.direct-chat-messages
+              ul.users-list.clearfix
+                li(ng-repeat='friend in online_friends track by $index')
+                  button(ng-click='chat_popup(friend)')
+                    img(src='', alt='User Image')
+                    |                                 
+                    a.users-list-name {{friend}}
+              // /.users-list
+            // /.box-body
+            .box-footer.text-center
+              a.uppercase(href='javascript:void(0)') Something
+            // /.box-footer
+          // /.box
+      // /.row
+      // Modal
+      #myModal.modal.fade(role='dialog')
+        .modal-dialog
+          // Modal content
+          .modal-content
+            .modal-header
+              button.close(type='button', data-dismiss='modal') &times;
+              |                     
+              h4.modal-title Are you sure you want to connect to {{friend}}?
+            |                 
+            .modal-footer
+              button.btn.btn-default(type='button', data-dismiss='modal', ng-click='confirm()') ok
+              |                     
+              button.btn.btn-default(type='button', data-dismiss='modal') cancel

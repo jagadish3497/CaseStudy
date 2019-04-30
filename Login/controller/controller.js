@@ -1,4 +1,5 @@
-var models = require('../model/model.js');
+//var models = require('../model/model.js');
+var models=require('../app.js')
 var path = require('path');
 var bodyParser = require('body-parser');
 
@@ -10,19 +11,26 @@ module.exports = function (app,io){
         extended: true
     }));
     
-    app.get('/',function(req,res){
+    /* app.get('/',function(req,res){
         res.sendFile(path.resolve(__dirname+"/../views/index.html"));
-    });
+    }); */
     
+    app.get('/index1', function(req, res) {
+        res.render('index1', {
+          user:req.user
+        });
+         }); 
+
+
     io.on('connection',function(socket){
-        console.log("Connection :User is connected  "+handle);
+        console.log("Connection :User is connected  "+name);
         console.log("Connection : " +socket.id);
-        io.to(socket.id).emit('handle', handle);
-        users[handle]=socket.id;
-        keys[socket.id]=handle;
+        io.to(socket.id).emit('name', name);
+        users[name]=socket.id;
+        keys[socket.id]=name;
         console.log("Users list : "+users);
         console.log("keys list : "+keys);
-        models.user.find({"handle" : handle},{friends:1,_id:0},function(err,doc){
+        models.user.find({"name" : name},{friends:1,_id:0},function(err,doc){
             if(err){res.json(err);}
             else{
                 friends=[];
@@ -79,7 +87,7 @@ module.exports = function (app,io){
         res.setHeader('Access-Control-Allow-Origin', '*');
         res.setHeader("Access-Control-Allow-Method","'GET, POST, OPTIONS, PUT, PATCH, DELETE'");
         friend=true;
-        models.user.find({"handle" : req.body.my_handle,"friends.name":req.body.friend_handle},function(err,doc){
+        models.user.find({"name" : req.body.my_name,"friends.name":req.body.friend_name},function(err,doc){
             if(err){res.json(err);}
             else if(doc.length!=0){
                 console.log("Friend request : "+doc.length);
@@ -89,11 +97,11 @@ module.exports = function (app,io){
             else{
                 console.log("Friend request : "+doc.length);
                 models.user.update({
-                    handle:req.body.my_handle
+                    name:req.body.my_name
                 },{
                     $push:{
                         friends:{
-                            name: req.body.friend_handle,
+                            name: req.body.friend_name,
                             status: "Pending"
                         }
                     }
@@ -105,7 +113,7 @@ module.exports = function (app,io){
                     //                console.log(doc);
                     //            }
                 });
-                io.to(users[req.body.friend_handle]).emit('message', req.body);
+                io.to(users[req.body.friend_name]).emit('message', req.body);
             }
         });
     });
@@ -114,8 +122,8 @@ module.exports = function (app,io){
         console.log("friend request confirmed : "+req.body);
         if(req.body.confirm=="Yes"){
             models.user.find({
-                "handle" : req.body.friend_handle,
-                "friends.name":req.body.my_handle
+                "name" : req.body.friend_name,
+                "friends.name":req.body.my_name
             },function(err,doc){
                 if(err){
                     res.json(err);
@@ -127,8 +135,8 @@ module.exports = function (app,io){
                 }
                 else{
                     models.user.update({
-                        "handle":req.body.my_handle,
-                        "friends.name":req.body.friend_handle
+                        "name":req.body.my_name,
+                        "friends.name":req.body.friend_name
                     },{
                         '$set':{
                             "friends.$.status":"Friend"
@@ -138,24 +146,22 @@ module.exports = function (app,io){
                         else{
 
                             console.log("friend request confirmed : Inside yes confirmed");
-                            io.to(users[req.body.friend_handle]).emit('friend', req.body.my_handle);
-                            io.to(users[req.body.my_handle]).emit('friend', req.body.friend_handle);
+                            io.to(users[req.body.friend_name]).emit('friend', req.body.my_name);
+                            io.to(users[req.body.my_name]).emit('friend', req.body.friend_name);
                         }
                     });
                     models.user.update({
-                        handle:req.body.friend_handle
+                        name:req.body.friend_name
                     },{
                         $push:{
                             friends:{
-                                name: req.body.my_handle,
+                                name: req.body.my_name,
                                 status: "Friend"
                             }
                         }
                     },{upsert:true},function(err,doc){
                         if(err){res.json(err);}
-                        //            else{
-                        //                console.log(doc);
-                        //            }
+                        
                     });
                 }
             });
@@ -164,11 +170,11 @@ module.exports = function (app,io){
             
             console.log("friend request confirmed : Inside No confirmed");
             models.user.update({
-                "handle":req.body.my_handle
+                "name":req.body.my_name
             },{
                 '$pull':{
                     'friends':{
-                        "name":req.body.friend_handle,
+                        "name":req.body.friend_name,
                     }
                 }
             },function(err,doc){

@@ -19,6 +19,8 @@ var http=require('http').Server(app);
 var io = require('socket.io')(http);
 //var ip = require('ip');
 
+//require("./controller/controller.js")(app,io);
+
 
 
 
@@ -81,12 +83,15 @@ userSchema.methods.comparePassword = function(candidatePassword, cb) {
 };
 
 var User = mongoose.model('User', userSchema);
-mongoose.connect("mongodb://localhost:27017/chat", { useNewUrlParser: true })
+mongoose.connect("mongodb://localhost:27017/chat", { useMongoClient: true })
 
 var app = express();
 
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
+
+
+
 
 app.use(favicon(__dirname + '/public/images/p.ico'));
 app.use(logger('dev'));
@@ -99,6 +104,13 @@ app.use(passport.initialize());
 app.use(passport.session());
 app.use(express.static(path.join(__dirname, 'public')));
 
+//app.use(express.static(path.join(__dirname, 'controller')));
+
+app.use(express.static('./')); 
+
+require("./controller/controller.js")(app,io);
+
+
 // Routes
 app.get('/', function(req, res){
   res.render('index', {
@@ -106,6 +118,20 @@ app.get('/', function(req, res){
     user: req.user
   });
 });
+
+
+/* app.get('/chat', function(req, res) {
+  res.sendFile("/views/chat.html", {"root": __dirname});
+    req.user
+  
+}); */
+
+
+ app.get('/chat', function(req, res) {
+  res.render('chat', {
+    user:req.user
+  });
+   }); 
 
 app.get('/ownerlogin', function(req, res) {
   res.render('ownerlogin', {
@@ -124,6 +150,8 @@ app.get('/borrowerlogin', function(req, res) {
     user: req.user
   });
 });  
+
+
 
 app.post('/ownerlogin', function(req, res, next) {
   passport.authenticate('local', function(err, user, info) {
@@ -149,12 +177,6 @@ app.post('/ownerlogin', function(req, res, next) {
       return res.redirect('/');
     });
   })(req, res, next);
-});
-
-app.get('/chat', function(req, res) {
-  res.sendFile("/views/chat.html", {"root": __dirname});
-    user: req.user
-  
 });
 
 app.get('/logout', function(req, res){
@@ -294,13 +316,6 @@ app.post('/reset/:token', function(req, res) {
     res.redirect('/');
   });
 });
-
-
-
-app.use(express.static('./')); 
-require("./controller/controller.js")(app,io);
-
-
 
 app.listen(3000, function () {
   console.log('Server running at http://127.0.0.1:3000/');
