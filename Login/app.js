@@ -15,15 +15,6 @@ var async = require('async');
 var crypto = require('crypto');
 var flash = require('express-flash');
 
-var http=require('http').Server(app);
-var io = require('socket.io')(http);
-//var ip = require('ip');
-
-//require("./controller/controller.js")(app,io);
-
-
-
-
  passport.use(new LocalStrategy(function(username, password, done) {
   User.findOne({ username: username }, function(err, user) {
     if (err) return done(err);
@@ -49,10 +40,8 @@ passport.deserializeUser(function(id, done) {
 });
 
 var userSchema = new mongoose.Schema({
-  name: { type: String, required: true, unique: true },
   username: { type: String, required: true, unique: true },
   email: { type: String, required: true, unique: true },
-  number: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   resetPasswordToken: String,
   resetPasswordExpires: Date
@@ -83,33 +72,27 @@ userSchema.methods.comparePassword = function(candidatePassword, cb) {
 };
 
 var User = mongoose.model('User', userSchema);
-mongoose.connect("mongodb://localhost:27017/chat", { useMongoClient: true })
-
+mongoose.connect('mongodb://localhost:27017/sample');
 var app = express();
+// Middleware
 
+// view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
-
-
-
+// uncomment after placing your favicon in /public
 app.use(favicon(__dirname + '/public/images/p.ico'));
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(session({ secret: 'session secret key' }));
+
 app.use(flash());
+
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(express.static(path.join(__dirname, 'public')));
-
-//app.use(express.static(path.join(__dirname, 'controller')));
-
-app.use(express.static('./')); 
-
-require("./controller/controller.js")(app,io);
-
 
 // Routes
 app.get('/', function(req, res){
@@ -118,20 +101,6 @@ app.get('/', function(req, res){
     user: req.user
   });
 });
-
-
-/* app.get('/chat', function(req, res) {
-  res.sendFile("/views/chat.html", {"root": __dirname});
-    req.user
-  
-}); */
-
-
- app.get('/chat', function(req, res) {
-  res.render('chat', {
-    user:req.user
-  });
-   }); 
 
 app.get('/ownerlogin', function(req, res) {
   res.render('ownerlogin', {
@@ -145,13 +114,11 @@ app.get('/borrowerlogin', function(req, res) {
   });
 });
  
-  app.get('/signup', function(req, res) {
+ app.get('/signup', function(req, res) {
   res.render('signup', {
     user: req.user
   });
-});  
-
-
+}); 
 
 app.post('/ownerlogin', function(req, res, next) {
   passport.authenticate('local', function(err, user, info) {
@@ -178,7 +145,7 @@ app.post('/ownerlogin', function(req, res, next) {
     });
   })(req, res, next);
 });
-
+ 
 app.get('/logout', function(req, res){
   req.logout();
   res.redirect('/');
@@ -190,12 +157,10 @@ app.get('/forgot', function(req, res) {
   });
 });
 
- app.post('/signup', function(req, res) {
+app.post('/signup', function(req, res) {
   var user = new User({
-      name: req.body.name,
       username: req.body.username,
       email: req.body.email,
-      number: req.body.number,
       password: req.body.password
     });
 
@@ -204,7 +169,7 @@ app.get('/forgot', function(req, res) {
       res.redirect('/');
     });
   });
-});  
+}); 
 
 app.get('/reset/:token', function(req, res) {
   User.findOne({ resetPasswordToken: req.params.token, resetPasswordExpires: { $gt: Date.now() } }, function(err, user) {
@@ -243,10 +208,10 @@ app.post('/forgot', function(req, res, next) {
     },
     function(token, user, done) {
       var smtpTransport = nodemailer.createTransport({
-        service: 'Gmail', 
+        service: 'Gmail', // se puede usar cualquier otro servicio soportado por nodemailer, see nodemailer support mail SMTP
         auth: {    
           user: 'jagadeesh.krishna123@gmail.com',
-          pass: 'password'
+          pass: 'Kamalamma@123'
         }
       });
     
@@ -292,11 +257,11 @@ app.post('/reset/:token', function(req, res) {
       });
     },
     function(user, done) {
-      var smtpTransport = nodemailer.createTransport({
-        service: 'Gmail', 
+      var smtpTransport = nodemailer.createTransport({//'SMTP', {
+        service: 'Gmail', // se puede usar cualquier otro servicio soportado por nodemailer, see nodemailer support mail SMTP
         auth: {
           user: 'jagadeesh.krishna123@gmail.com',
-          pass: 'passowrd'
+          pass: 'Kamalamma@123'
        
         }
       });
@@ -316,6 +281,7 @@ app.post('/reset/:token', function(req, res) {
     res.redirect('/');
   });
 });
+
 
 app.listen(3000, function () {
   console.log('Server running at http://127.0.0.1:3000/');
