@@ -261,7 +261,7 @@ app.post('/reset/:token', function(req, res) {
         service: 'Gmail', // se puede usar cualquier otro servicio soportado por nodemailer, see nodemailer support mail SMTP
         auth: {
           user: 'jagadeesh.krishna123@gmail.com',
-          pass: 'Kamalamma@123'
+          pass: 'password'
        
         }
       });
